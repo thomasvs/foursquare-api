@@ -1,6 +1,10 @@
 import urllib
 import urllib2
-import json
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 class FoursquareCall(object):
     pass
