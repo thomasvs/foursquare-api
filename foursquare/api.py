@@ -50,23 +50,31 @@ class Foursquare(object):
                 return Foursquare(auth=self.auth, resource=self.resource,
                                   aspect=m)
 
-    def __call__(self, **kwargs):
+    def __call__(self, method='GET', **kwargs):
         resource_id = str(kwargs.pop('id', 'self'))
         if self.auth.token:
             kwargs['oauth_token'] = self.auth.token
 
         # build the url
         if self.aspect:
-            uri = '%s/%s/%s/%s?%s' % (Foursquare.API_BASE_URI, self.resource,
-                                      resource_id, self.aspect,
-                                      urllib.urlencode(kwargs))
+            uri = '%s/%s/%s/%s' % (Foursquare.API_BASE_URI, self.resource,
+                                      resource_id, self.aspect)
         else:
-            uri = '%s/%s/%s?%s' % (Foursquare.API_BASE_URI, self.resource,
-                                   resource_id, urllib.urlencode(kwargs))
+            uri = '%s/%s/%s' % (Foursquare.API_BASE_URI, self.resource,
+                                   resource_id)
+
+        data = None
+        if method == 'GET':
+            uri += '?%s' % urllib.urlencode(kwargs)
+        elif method == 'POST':
+            data = urllib.urlencode(kwargs)
+        else:
+            raise KeyError('method %r not supported' % method)
 
         # request the data from foursquare
         # TODO: handle various exceptions here...
-        request = urllib2.Request(uri)
+        # TODO: add a recorder for requests and replies for debugging
+        request = urllib2.Request(uri, data=data)
         response = urllib2.urlopen(request)
 
         # parse response json and return
